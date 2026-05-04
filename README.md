@@ -21,7 +21,7 @@ The system uses Machine Learning (learning from data patterns), Natural Language
 Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/smart-ai-email-agent.git
+git clone https://github.com/Aswarth394/Smart-Email-Agent
 cd smart-ai-email-agent
 ```
 
