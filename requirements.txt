@@ -1,29 +1,16 @@
-
-google-auth
-google-auth-oauthlib
+# Google Gmail API (Authentication & Fetching) 
 google-api-python-client
-beautifulsoup4
+google-auth-httplib2
+google-auth-oauthlib
 
-langchain-google-genai
-google-generativeai
+# Frontend (UI)
 streamlit
-pandas
+
+
+#  LLM API (Summarizer & Drafter) 
+groq
+python-dotenv
+
+#  AI & Deep Learning (Classifier) 
 transformers
 torch
-langchain
-
-# Week 1: Data Extraction (Gmail API)
-#google-api-python-client
-#google-auth-httplib2
-##google-auth-oauthlib
-
-# Week 2: Machine Learning Classification (Hugging Face)
-#transformers
-#torch
-
-# Week 3: Generative AI (Vault & LLM Engine)
-#python-dotenv
-#groq
-
-# Week 4: Graphical User Interface (Web Dashboard)
-streamlit

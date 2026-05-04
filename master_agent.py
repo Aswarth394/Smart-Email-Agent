@@ -1,4 +1,3 @@
-# master_agent.py
 import time
 import json
 import os
@@ -17,62 +16,71 @@ def load_memory():
     return set()
 
 def save_memory(memory_set):
+    os.makedirs("data", exist_ok=True)
     with open(MEMORY_FILE, "w") as f:
         json.dump(list(memory_set), f)
 
 def save_for_ui(email):
     os.makedirs("data", exist_ok=True)
     dashboard_data = []
+    
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r") as f:
                 dashboard_data = json.load(f)
+                if isinstance(dashboard_data, dict): dashboard_data = []
         except: pass
 
-    # We now save the ORIGINAL body text for the UI
     new_entry = {
         "id": email["id"],
         "subject": email["subject"],
         "sender": email["sender"],
         "body": email.get("body", "No content available."), 
         "category": email.get("category", "Personal"),
+        "received_date": email.get("received_date", "Unknown Date"), 
+        "sort_time": email.get("sort_time", 0.0), 
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
 
+    # Put the newest email at the very top
     dashboard_data.insert(0, new_entry)
-    dashboard_data = dashboard_data[:20] # Keep latest 20
+    
+    # FIFO Queue constraint. Keeps only 100, deleting the oldest.
+    dashboard_data = dashboard_data[:100] 
 
     with open(DATA_FILE, "w") as f:
         json.dump(dashboard_data, f, indent=4)
 
 def run_lively_agent():
-    print("🚀 AI Agent is ONLINE. Fetching and Classifying only...")
-    processed_emails = load_memory() 
-    
+    print(" AI Agent is ONLINE. Fetching strictly the latest 100 emails...")
+    processed_emails = load_memory()
+
     while True:
         try:
-            new_emails = fetch_unread_emails(limit=5)
-        except Exception as e:
-            print(f"Error: {e}")
-            time.sleep(10)
-            continue
-            
-        for email in new_emails:
-            if email['id'] in processed_emails:
-                continue 
-                
-            print(f"🔍 Storing New Email: {email['subject']}")
-            
-            # Categorize it (Spam, Work, Personal)
-            email['category'] = classify_email(email['body'])
-            
-            # Save raw data to UI
-            save_for_ui(email)
-            
-            processed_emails.add(email['id'])
-            save_memory(processed_emails)
+            email_stream = fetch_unread_emails(limit=30, processed_ids=processed_emails)
+            has_new_emails = False
 
-        time.sleep(30)
+            for email in email_stream:
+                has_new_emails = True
+                print(f" Classifying New Email: {email['subject'][:40]}")
+
+                email['category'] = classify_email(email['subject']+""+email['body'])
+               ## print(email['subject']+""+email['body'])
+                save_for_ui(email)
+
+                processed_emails.add(email['id'])
+                save_memory(processed_emails)
+
+            if not has_new_emails:
+                print(f" {time.strftime('%H:%M:%S')} - No new emails. Inbox is up to date. Waiting...")
+
+        except Exception as e:
+            print(f" Network Wait: {e}")
+            time.sleep(2)
+            continue
+
+        time.sleep(10)
+        
 
 if __name__ == "__main__":
     run_lively_agent()
